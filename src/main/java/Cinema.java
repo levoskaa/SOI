@@ -1,4 +1,5 @@
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ import seatreservation.SeatStatus;
 public class Cinema implements ICinema {
     private static Seat[][] seats;
     private static SeatStatus[][] seatStatuses;
-    private static Map<String, Seat[]> locks;
+    private static Map<String, Seat[]> locks = new HashMap<String, Seat[]>();
 
     @Override
     public void init(int rows, int columns) throws ICinemaInitCinemaException {
@@ -175,7 +176,7 @@ public class Cinema implements ICinema {
 
     private Map.Entry<Integer, Integer> getSeatIndex(Seat seat) {
 	int row = seat.getRow().charAt(0) - 'A';
-	int column = Integer.parseInt(seat.getColumn());
+	int column = Integer.parseInt(seat.getColumn()) - 1;
 	return new AbstractMap.SimpleEntry<>(row, column);
     }
 
@@ -185,7 +186,10 @@ public class Cinema implements ICinema {
 	int column;
 	try {
 	    row = seat.getRow().charAt(0) - 'A';
-	    column = Integer.parseInt(seat.getColumn());
+	    column = Integer.parseInt(seat.getColumn()) - 1;
+	    if (row >= seats.length || column >= seats[0].length) {
+		throw new Exception();
+	    }
 	} catch (Exception e) {
 	    throw new IllegalArgumentException("Seat position invalid");
 	}
