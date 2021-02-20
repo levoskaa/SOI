@@ -25,7 +25,7 @@ import seatreservation.SeatStatus;
 	endpointInterface = "seatreservation.ICinema",
 	wsdlLocation = "WEB-INF/wsdl/SeatReservation.wsdl")
 public class Cinema implements ICinema {
-    private static Seat[][] seats;
+    private static Seat[][] seats = new Seat[0][0];
     private static SeatStatus[][] seatStatuses;
     private static Map<String, Seat[]> locks = new HashMap<String, Seat[]>();
 
@@ -88,8 +88,12 @@ public class Cinema implements ICinema {
 
     @Override
     public String lock(Seat seat, int count) throws ICinemaLockCinemaException {
-	Map.Entry<Integer, Integer> seatIndex;
 	CinemaException ce;
+	if (count < 1) {
+	    ce = createCinemaException("Number of seats must be greater than 0",
+		    400);
+	}
+	Map.Entry<Integer, Integer> seatIndex;
 	try {
 	    seatIndex = tryGetSeatIndex(seat);
 	} catch (IllegalArgumentException e) {
