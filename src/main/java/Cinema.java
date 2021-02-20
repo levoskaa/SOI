@@ -1,6 +1,7 @@
 import javax.jws.WebService;
 
 import seatreservation.ArrayOfSeat;
+import seatreservation.CinemaException;
 import seatreservation.ICinema;
 import seatreservation.ICinemaBuyCinemaException;
 import seatreservation.ICinemaGetAllSeatsCinemaException;
@@ -19,11 +20,41 @@ import seatreservation.SeatStatus;
 	endpointInterface = "seatreservation.ICinema",
 	wsdlLocation = "WEB-INF/wsdl/SeatReservation.wsdl")
 public class Cinema implements ICinema {
+    private static Seat[][] seats;
+    private static SeatStatus[][] seatStatuses;
 
     @Override
     public void init(int rows, int columns) throws ICinemaInitCinemaException {
-	// TODO Auto-generated method stub
-
+	CinemaException ce = new CinemaException();
+	if (rows < 1 || rows > 26) {
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage("Number of rows must be between 1 and 26");
+	    throw new ICinemaInitCinemaException(
+		    "Number of rows must be between 1 and 26", ce);
+	}
+	if (columns < 1 || columns > 100) {
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage("Number of columns must be between 1 and 100");
+	    throw new ICinemaInitCinemaException(
+		    "Number of columns must be between 1 and 100", ce);
+	}
+	seats = new Seat[rows][columns];
+	Seat seat;
+	char A = 'A';
+	for (int i = 0; i < rows; ++i) {
+	    for (int j = 0; j < columns; ++j) {
+		seat = new Seat();
+		seat.setRow(String.valueOf((char) (A + i)));
+		seat.setColumn(String.valueOf(j + 1));
+		seats[i][j] = seat;
+	    }
+	}
+	seatStatuses = new SeatStatus[rows][columns];
+	for (int i = 0; i < rows; ++i) {
+	    for (int j = 0; j < columns; ++j) {
+		seatStatuses[i][j] = SeatStatus.FREE;
+	    }
+	}
     }
 
     @Override
