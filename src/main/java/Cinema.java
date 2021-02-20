@@ -1,3 +1,6 @@
+import java.util.AbstractMap;
+import java.util.Map;
+
 import javax.jws.WebService;
 
 import seatreservation.ArrayOfSeat;
@@ -71,19 +74,8 @@ public class Cinema implements ICinema {
     @Override
     public SeatStatus getSeatStatus(Seat seat)
 	    throws ICinemaGetSeatStatusCinemaException {
-	int row;
-	int column;
-	try {
-	    row = seat.getRow().charAt(0) - 'A';
-	    column = Integer.parseInt(seat.getColumn());
-	} catch (Exception e) {
-	    CinemaException ce = new CinemaException();
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage("Seat position invalid");
-	    throw new ICinemaGetSeatStatusCinemaException(
-		    "Seat position invalid", ce);
-	}
-	return seatStatuses[row][column];
+	Map.Entry<Integer, Integer> seatIndex = getSeatIndex(seat);
+	return seatStatuses[seatIndex.getKey()][seatIndex.getValue()];
     }
 
     @Override
@@ -108,6 +100,23 @@ public class Cinema implements ICinema {
     public void buy(String lockId) throws ICinemaBuyCinemaException {
 	// TODO Auto-generated method stub
 
+    }
+
+    private Map.Entry<Integer, Integer> getSeatIndex(Seat seat)
+	    throws ICinemaGetSeatStatusCinemaException {
+	int row;
+	int column;
+	try {
+	    row = seat.getRow().charAt(0) - 'A';
+	    column = Integer.parseInt(seat.getColumn());
+	} catch (Exception e) {
+	    CinemaException ce = new CinemaException();
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage("Seat position invalid");
+	    throw new ICinemaGetSeatStatusCinemaException(
+		    "Seat position invalid", ce);
+	}
+	return new AbstractMap.SimpleEntry<>(row, column);
     }
 
 }
