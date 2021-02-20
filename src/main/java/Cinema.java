@@ -148,6 +148,13 @@ public class Cinema implements ICinema {
 	    ce = createCinemaException("No lock found with the given id", 404);
 	    throw new ICinemaReserveCinemaException(ce.getErrorMessage(), ce);
 	}
+	Seat[] lockedSeats = locks.get(lockId);
+	Map.Entry<Integer, Integer> seatIndex;
+	for (int i = 0; i < lockedSeats.length; ++i) {
+	    seatIndex = getSeatIndex(lockedSeats[i]);
+	    seatStatuses[seatIndex.getKey()][seatIndex
+		    .getValue()] = SeatStatus.RESERVED;
+	}
     }
 
     @Override
