@@ -134,8 +134,12 @@ public class Cinema implements ICinema {
 	for (int i = 0; i < lockedSeats.length; ++i) {
 	    seatIndex = getSeatIndex(lockedSeats[i]);
 	    if (seatStatuses[seatIndex.getKey()][seatIndex
-		    .getValue()] != SeatStatus.LOCKED) {
-		return;
+		    .getValue()] == SeatStatus.RESERVED
+		    || seatStatuses[seatIndex.getKey()][seatIndex
+			    .getValue()] == SeatStatus.SOLD) {
+		ce = createCinemaException("Only locks can be unlocked", 400);
+		throw new ICinemaUnlockCinemaException(ce.getErrorMessage(),
+			ce);
 	    }
 	}
 	for (int i = 0; i < lockedSeats.length; ++i) {
