@@ -59,8 +59,13 @@ public class Cinema implements ICinema {
 
     @Override
     public ArrayOfSeat getAllSeats() throws ICinemaGetAllSeatsCinemaException {
-	// TODO Auto-generated method stub
-	return null;
+	ArrayOfSeat seatArray = new ArrayOfSeat();
+	for (int i = 0; i < seats.length; ++i) {
+	    for (int j = 0; j < seats[0].length; ++j) {
+		seatArray.getSeat().add(seats[i][j]);
+	    }
+	}
+	return seatArray;
     }
 
     @Override
