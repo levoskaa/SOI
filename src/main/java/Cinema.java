@@ -159,8 +159,18 @@ public class Cinema implements ICinema {
 
     @Override
     public void buy(String lockId) throws ICinemaBuyCinemaException {
-	// TODO Auto-generated method stub
-
+	CinemaException ce;
+	if (!locks.containsKey(lockId)) {
+	    ce = createCinemaException("No lock found with the given id", 404);
+	    throw new ICinemaBuyCinemaException(ce.getErrorMessage(), ce);
+	}
+	Seat[] lockedSeats = locks.get(lockId);
+	Map.Entry<Integer, Integer> seatIndex;
+	for (int i = 0; i < lockedSeats.length; ++i) {
+	    seatIndex = getSeatIndex(lockedSeats[i]);
+	    seatStatuses[seatIndex.getKey()][seatIndex
+		    .getValue()] = SeatStatus.SOLD;
+	}
     }
 
     private Map.Entry<Integer, Integer> getSeatIndex(Seat seat) {
