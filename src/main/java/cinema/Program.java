@@ -29,7 +29,7 @@ public class Program {
 		lockId = cinema.lock(seat, 1);
 		System.out.println("Lock successful, lockId = " + lockId);
 	    } catch (Exception e) {
-		System.out.println(e);
+		e.printStackTrace();
 	    }
 	    break;
 	case "RESERVE":
@@ -38,7 +38,7 @@ public class Program {
 		cinema.reserve(lockId);
 		System.out.println("Reserve successful");
 	    } catch (Exception e) {
-		System.out.println(e);
+		e.printStackTrace();
 	    }
 	    break;
 	case "BUY":
@@ -47,7 +47,7 @@ public class Program {
 		cinema.buy(lockId);
 		System.out.println("Buy successful");
 	    } catch (Exception e) {
-		System.out.println(e);
+		e.printStackTrace();
 	    }
 	    break;
 	}
