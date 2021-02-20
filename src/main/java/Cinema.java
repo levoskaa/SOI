@@ -71,8 +71,19 @@ public class Cinema implements ICinema {
     @Override
     public SeatStatus getSeatStatus(Seat seat)
 	    throws ICinemaGetSeatStatusCinemaException {
-	// TODO Auto-generated method stub
-	return null;
+	int row;
+	int column;
+	try {
+	    row = seat.getRow().charAt(0) - 'A';
+	    column = Integer.parseInt(seat.getColumn());
+	} catch (Exception e) {
+	    CinemaException ce = new CinemaException();
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage("Seat position invalid");
+	    throw new ICinemaGetSeatStatusCinemaException(
+		    "Seat position invalid", ce);
+	}
+	return seatStatuses[row][column];
     }
 
     @Override
