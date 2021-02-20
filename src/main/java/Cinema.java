@@ -30,15 +30,15 @@ public class Cinema implements ICinema {
 
     @Override
     public void init(int rows, int columns) throws ICinemaInitCinemaException {
-	CinemaException ce = new CinemaException();
+	CinemaException ce;
 	if (rows < 1 || rows > 26) {
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage("Number of rows must be between 1 and 26");
+	    ce = createCinemaException(
+		    "Number of rows must be between 1 and 26", 400);
 	    throw new ICinemaInitCinemaException(ce.getErrorMessage(), ce);
 	}
 	if (columns < 1 || columns > 100) {
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage("Number of columns must be between 1 and 100");
+	    ce = createCinemaException(
+		    "Number of columns must be between 1 and 100", 400);
 	    throw new ICinemaInitCinemaException(ce.getErrorMessage(), ce);
 	}
 	seats = new Seat[rows][columns];
@@ -103,9 +103,8 @@ public class Cinema implements ICinema {
 	    boolean isSeatFree = seatStatuses[row][column
 		    + i] == SeatStatus.FREE;
 	    if (outOfBounds || !isSeatFree) {
-		ce = new CinemaException();
-		ce.setErrorCode(400);
-		ce.setErrorMessage("Not enough free seats in range");
+		ce = createCinemaException("Not enough free seats in range",
+			400);
 		throw new ICinemaLockCinemaException(ce.getErrorMessage(), ce);
 	    }
 	    seatsToBeLocked[i] = seats[row][column + i];
@@ -122,9 +121,7 @@ public class Cinema implements ICinema {
     public void unlock(String lockId) throws ICinemaUnlockCinemaException {
 	CinemaException ce;
 	if (!locks.containsKey(lockId)) {
-	    ce = new CinemaException();
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage("No lock found with the given id");
+	    ce = createCinemaException("No lock found with the given id", 404);
 	    throw new ICinemaUnlockCinemaException(ce.getErrorMessage(), ce);
 	}
 	Seat[] lockedSeats = locks.get(lockId);
@@ -146,8 +143,11 @@ public class Cinema implements ICinema {
 
     @Override
     public void reserve(String lockId) throws ICinemaReserveCinemaException {
-	// TODO Auto-generated method stub
-
+	CinemaException ce;
+	if (!locks.containsKey(lockId)) {
+	    ce = createCinemaException("No lock found with the given id", 404);
+	    throw new ICinemaReserveCinemaException(ce.getErrorMessage(), ce);
+	}
     }
 
     @Override
