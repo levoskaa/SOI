@@ -98,12 +98,16 @@ public class Cinema implements ICinema {
 	}
 	int row = seatIndex.getKey();
 	int column = seatIndex.getValue();
+	boolean outOfBounds = column + count - 1 >= seatStatuses[0].length;
+	if (outOfBounds) {
+	    ce = createCinemaException("Not enough free seats in range", 400);
+	    throw new ICinemaLockCinemaException(ce.getErrorMessage(), ce);
+	}
 	Seat[] seatsToBeLocked = new Seat[count];
 	for (int i = 0; i < count; ++i) {
-	    boolean outOfBounds = column + i >= seatStatuses[0].length;
 	    boolean isSeatFree = seatStatuses[row][column
 		    + i] == SeatStatus.FREE;
-	    if (outOfBounds || !isSeatFree) {
+	    if (!isSeatFree) {
 		ce = createCinemaException("Not enough free seats in range",
 			400);
 		throw new ICinemaLockCinemaException(ce.getErrorMessage(), ce);
