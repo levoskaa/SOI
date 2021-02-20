@@ -1,5 +1,6 @@
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.jws.WebService;
 
@@ -25,6 +26,7 @@ import seatreservation.SeatStatus;
 public class Cinema implements ICinema {
     private static Seat[][] seats;
     private static SeatStatus[][] seatStatuses;
+    private static Map<String, Seat[]> locks;
 
     @Override
     public void init(int rows, int columns) throws ICinemaInitCinemaException {
@@ -32,14 +34,12 @@ public class Cinema implements ICinema {
 	if (rows < 1 || rows > 26) {
 	    ce.setErrorCode(400);
 	    ce.setErrorMessage("Number of rows must be between 1 and 26");
-	    throw new ICinemaInitCinemaException(
-		    "Number of rows must be between 1 and 26", ce);
+	    throw new ICinemaInitCinemaException(ce.getErrorMessage(), ce);
 	}
 	if (columns < 1 || columns > 100) {
 	    ce.setErrorCode(400);
 	    ce.setErrorMessage("Number of columns must be between 1 and 100");
-	    throw new ICinemaInitCinemaException(
-		    "Number of columns must be between 1 and 100", ce);
+	    throw new ICinemaInitCinemaException(ce.getErrorMessage(), ce);
 	}
 	seats = new Seat[rows][columns];
 	Seat seat;
@@ -80,8 +80,37 @@ public class Cinema implements ICinema {
 
     @Override
     public String lock(Seat seat, int count) throws ICinemaLockCinemaException {
-	// TODO Auto-generated method stub
-	return null;
+	Map.Entry<Integer, Integer> seatIndex;
+	CinemaException ce;
+	try {
+	    seatIndex = getSeatIndex(seat);
+	} catch (ICinemaGetSeatStatusCinemaException e) {
+	    ce = new CinemaException();
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage(e.getFaultInfo().getErrorMessage());
+	    throw new ICinemaLockCinemaException(e.getMessage(), ce);
+	}
+	int row = seatIndex.getKey();
+	int column = seatIndex.getValue();
+	Seat[] seatsToBeLocked = new Seat[count];
+	for (int i = 0; i < count; ++i) {
+	    boolean outOfBounds = column + i >= seatStatuses[0].length;
+	    boolean isSeatFree = seatStatuses[row][column
+		    + i] == SeatStatus.FREE;
+	    if (outOfBounds || !isSeatFree) {
+		ce = new CinemaException();
+		ce.setErrorCode(400);
+		ce.setErrorMessage("Not enough free seats in range");
+		throw new ICinemaLockCinemaException(ce.getErrorMessage(), ce);
+	    }
+	    seatsToBeLocked[i] = seats[row][column + i];
+	}
+	for (int i = 0; i < count; ++i) {
+	    seatStatuses[row][column + i] = SeatStatus.LOCKED;
+	}
+	String lockId = UUID.randomUUID().toString();
+	locks.put(lockId, seatsToBeLocked);
+	return lockId;
     }
 
     @Override
@@ -113,8 +142,8 @@ public class Cinema implements ICinema {
 	    CinemaException ce = new CinemaException();
 	    ce.setErrorCode(400);
 	    ce.setErrorMessage("Seat position invalid");
-	    throw new ICinemaGetSeatStatusCinemaException(
-		    "Seat position invalid", ce);
+	    throw new ICinemaGetSeatStatusCinemaException(ce.getErrorMessage(),
+		    ce);
 	}
 	return new AbstractMap.SimpleEntry<>(row, column);
     }
