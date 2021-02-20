@@ -74,7 +74,14 @@ public class Cinema implements ICinema {
     @Override
     public SeatStatus getSeatStatus(Seat seat)
 	    throws ICinemaGetSeatStatusCinemaException {
-	Map.Entry<Integer, Integer> seatIndex = getSeatIndex(seat);
+	Map.Entry<Integer, Integer> seatIndex;
+	try {
+	    seatIndex = tryGetSeatIndex(seat);
+	} catch (IllegalArgumentException e) {
+	    CinemaException ce = createCinemaException(e.getMessage(), 400);
+	    throw new ICinemaGetSeatStatusCinemaException(ce.getErrorMessage(),
+		    ce);
+	}
 	return seatStatuses[seatIndex.getKey()][seatIndex.getValue()];
     }
 
@@ -83,12 +90,10 @@ public class Cinema implements ICinema {
 	Map.Entry<Integer, Integer> seatIndex;
 	CinemaException ce;
 	try {
-	    seatIndex = getSeatIndex(seat);
-	} catch (ICinemaGetSeatStatusCinemaException e) {
-	    ce = new CinemaException();
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage(e.getFaultInfo().getErrorMessage());
-	    throw new ICinemaLockCinemaException(e.getMessage(), ce);
+	    seatIndex = tryGetSeatIndex(seat);
+	} catch (IllegalArgumentException e) {
+	    ce = createCinemaException(e.getMessage(), 400);
+	    throw new ICinemaLockCinemaException(ce.getErrorMessage(), ce);
 	}
 	int row = seatIndex.getKey();
 	int column = seatIndex.getValue();
@@ -115,8 +120,28 @@ public class Cinema implements ICinema {
 
     @Override
     public void unlock(String lockId) throws ICinemaUnlockCinemaException {
-	// TODO Auto-generated method stub
-
+	CinemaException ce;
+	if (!locks.containsKey(lockId)) {
+	    ce = new CinemaException();
+	    ce.setErrorCode(400);
+	    ce.setErrorMessage("No lock found with the given id");
+	    throw new ICinemaUnlockCinemaException(ce.getErrorMessage(), ce);
+	}
+	Seat[] lockedSeats = locks.get(lockId);
+	Map.Entry<Integer, Integer> seatIndex;
+	for (int i = 0; i < lockedSeats.length; ++i) {
+	    seatIndex = getSeatIndex(lockedSeats[i]);
+	    if (seatStatuses[seatIndex.getKey()][seatIndex
+		    .getValue()] != SeatStatus.LOCKED) {
+		return;
+	    }
+	}
+	for (int i = 0; i < lockedSeats.length; ++i) {
+	    seatIndex = getSeatIndex(lockedSeats[i]);
+	    seatStatuses[seatIndex.getKey()][seatIndex
+		    .getValue()] = SeatStatus.FREE;
+	}
+	locks.remove(lockId);
     }
 
     @Override
@@ -131,21 +156,30 @@ public class Cinema implements ICinema {
 
     }
 
-    private Map.Entry<Integer, Integer> getSeatIndex(Seat seat)
-	    throws ICinemaGetSeatStatusCinemaException {
+    private Map.Entry<Integer, Integer> getSeatIndex(Seat seat) {
+	int row = seat.getRow().charAt(0) - 'A';
+	int column = Integer.parseInt(seat.getColumn());
+	return new AbstractMap.SimpleEntry<>(row, column);
+    }
+
+    private Map.Entry<Integer, Integer> tryGetSeatIndex(Seat seat)
+	    throws IllegalArgumentException {
 	int row;
 	int column;
 	try {
 	    row = seat.getRow().charAt(0) - 'A';
 	    column = Integer.parseInt(seat.getColumn());
 	} catch (Exception e) {
-	    CinemaException ce = new CinemaException();
-	    ce.setErrorCode(400);
-	    ce.setErrorMessage("Seat position invalid");
-	    throw new ICinemaGetSeatStatusCinemaException(ce.getErrorMessage(),
-		    ce);
+	    throw new IllegalArgumentException("Seat position invalid");
 	}
 	return new AbstractMap.SimpleEntry<>(row, column);
     }
 
+    private CinemaException createCinemaException(String message,
+	    int errorCode) {
+	CinemaException ce = new CinemaException();
+	ce.setErrorCode(errorCode);
+	ce.setErrorMessage(message);
+	return ce;
+    }
 }
