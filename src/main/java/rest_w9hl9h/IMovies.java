@@ -40,5 +40,5 @@ public interface IMovies {
 
     @DELETE
     @Path("{id}")
-    void deleteMovie(@PathParam("id") int id);
+    Response deleteMovie(@PathParam("id") int id);
 }

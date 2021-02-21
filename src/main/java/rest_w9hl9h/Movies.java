@@ -73,9 +73,13 @@ public class Movies implements IMovies {
     }
 
     @Override
-    public void deleteMovie(int id) {
-	// TODO Auto-generated method stub
-
+    public Response deleteMovie(int id) {
+	Optional<Movie> movieToDelete = movies.stream()
+		.filter(m -> m.getId() == id)
+		.collect(Collectors.reducing((a, b) -> null));
+	if (movieToDelete.isPresent()) {
+	    movies.remove(movieToDelete.get());
+	}
+	return Response.status(Response.Status.NO_CONTENT).build();
     }
-
 }
