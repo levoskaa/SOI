@@ -15,7 +15,7 @@ import javax.ws.rs.core.MediaType;
 
 @Path("movies")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-public interface IMovieDatabase {
+public interface IMovies {
     @GET
     List<Movie> getMovies();
 
@@ -30,12 +30,12 @@ public interface IMovieDatabase {
 
     @POST
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    int createMovie(final Movie movie);
+    IdResult createMovie(Movie movie);
 
     @PUT
     @Path("{id}")
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    void upsertMovie(@PathParam("id") int id, final Movie movie);
+    void upsertMovie(@PathParam("id") int id, Movie movie);
 
     @DELETE
     @Path("{id}")
