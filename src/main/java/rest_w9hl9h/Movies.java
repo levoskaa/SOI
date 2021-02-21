@@ -13,9 +13,10 @@ public class Movies implements IMovies {
     private static List<Movie> movies = new ArrayList<Movie>();
 
     @Override
-    public List<Movie> getMovies() {
-	// TODO Auto-generated method stub
-	return null;
+    public MoviesResult getMovies() {
+	MoviesResult result = new MoviesResult();
+	result.setMovies(movies);
+	return result;
     }
 
     @Override

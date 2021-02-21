@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public interface IMovies {
     @GET
-    List<Movie> getMovies();
+    MoviesResult getMovies();
 
     @GET
     @Path("{id}")
