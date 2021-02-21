@@ -38,18 +38,38 @@ public class Movies implements IMovies {
 
     @Override
     public IdResult createMovie(Movie movie) {
+	boolean isIdTaken = movies.stream().anyMatch(m -> m.getId() == nextId);
+	while (isIdTaken) {
+	    ++nextId;
+	    isIdTaken = movies.stream().anyMatch(m -> m.getId() == nextId);
+	}
 	movie.setId(nextId);
 	movies.add(movie);
 	IdResult result = new IdResult();
-	result.setId(nextId);
+	result.setId(movie.getId());
 	++nextId;
 	return result;
     }
 
     @Override
-    public void upsertMovie(int id, Movie movie) {
-	// TODO Auto-generated method stub
-
+    public Response upsertMovie(int id, Movie movie) {
+	if (id < 0) {
+	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+	}
+	Optional<Movie> result = movies.stream().filter(m -> m.getId() == id)
+		.collect(Collectors.reducing((a, b) -> null));
+	Response response;
+	if (result.isEmpty()) {
+	    movie.setId(id);
+	    movies.add(movie);
+	    response = Response.status(Response.Status.CREATED).build();
+	} else {
+	    int index = movies.indexOf(result.get());
+	    movie.setId(id);
+	    movies.set(index, movie);
+	    response = Response.status(Response.Status.OK).build();
+	}
+	return response;
     }
 
     @Override

@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("movies")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -35,7 +36,7 @@ public interface IMovies {
     @PUT
     @Path("{id}")
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    void upsertMovie(@PathParam("id") int id, Movie movie);
+    Response upsertMovie(@PathParam("id") int id, Movie movie);
 
     @DELETE
     @Path("{id}")
