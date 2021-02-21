@@ -1,6 +1,7 @@
 package rest_w9hl9h;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,9 +32,25 @@ public class Movies implements IMovies {
     }
 
     @Override
-    public List<Movie> findMovie(int year, String orderingField) {
-	// TODO Auto-generated method stub
-	return null;
+    public MovieIdsResult findMovie(int year, String orderingField) {
+	if (!orderingField.toUpperCase().equals("DIRECTOR")
+		&& !orderingField.toUpperCase().equals("TITLE")) {
+	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+	}
+	MovieIdsResult result = new MovieIdsResult();
+	List<Movie> searchedMovies = movies.stream()
+		.filter(movie -> movie.getYear() == year)
+		.collect(Collectors.toList());
+	Collections.sort(searchedMovies, (a, b) -> {
+	    if (orderingField.toUpperCase().equals("DIRECTOR")) {
+		return a.getDirector().compareTo(b.getDirector());
+	    }
+	    return a.getTitle().compareTo(b.getTitle());
+	});
+	List<Integer> searchedIds = searchedMovies.stream()
+		.map(movie -> movie.getId()).collect(Collectors.toList());
+	result.setId(searchedIds);
+	return result;
     }
 
     @Override
