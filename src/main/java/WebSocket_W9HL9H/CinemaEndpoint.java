@@ -1,5 +1,12 @@
 package WebSocket_W9HL9H;
 
+import java.io.StringReader;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -9,14 +16,19 @@ import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint("/cinema")
 public class CinemaEndpoint {
+    private static SeatStatus[][] seats = new SeatStatus[0][0];
+    private static Map<String, Session> sessions = new ConcurrentHashMap<>();
+
     @OnOpen
     public void open(Session session) {
 	System.out.println("WebSocket opened: " + session.getId());
+	sessions.put(session.getId(), session);
     }
 
     @OnClose
     public void close(Session session) {
 	System.out.println("WebSocket closed: " + session.getId());
+	sessions.remove(session.getId());
     }
 
     @OnError
@@ -25,8 +37,48 @@ public class CinemaEndpoint {
     }
 
     @OnMessage
-    public String message(String msg) {
+    public void message(Session session, String msg) {
 	System.out.println("WebSocket message: " + msg);
-	return "Hello: " + msg;
+	JsonReader jsonReader = Json.createReader(new StringReader(msg));
+	JsonObject message = jsonReader.readObject();
+	String messageType = message.getString("type");
+	switch (messageType) {
+	case "initRoom":
+	    initRoom(session, message);
+	    break;
+	}
+    }
+
+    private void initRoom(Session session, JsonObject message) {
+	int rows = 0;
+	int columns = 0;
+	JsonObject error = null;
+	boolean isError = false;
+	try {
+	    rows = Integer.parseInt(message.getString("rows"));
+	    columns = Integer.parseInt(message.getString("columns"));
+	    if (rows <= 0 || columns <= 0) {
+		throw new Exception();
+	    }
+	    seats = new SeatStatus[rows][columns];
+	} catch (Exception e) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message",
+			    "Row or column count is not positive integer")
+		    .build();
+	    isError = true;
+	}
+	if (isError) {
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception e) {
+	    }
+	}
+	seats = new SeatStatus[rows][columns];
+	for (int i = 0; i < rows; ++i) {
+	    for (int j = 0; j < columns; ++j) {
+		seats[i][j] = SeatStatus.FREE;
+	    }
+	}
     }
 }
