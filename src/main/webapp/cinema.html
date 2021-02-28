@@ -21,6 +21,7 @@
 	var seatPadding = 2;
 	var mousePos = null;
 	var selectedSeat = null;
+	var reservedSeat = null;
 	var lockId = null;
 	var canvas = null;
 	var context = null; // Ezt a "context" nevű változót tilos átnevezni vagy lokálissá tenni.
@@ -106,8 +107,9 @@
 		var col = Math.floor(mousePos.x / seatSize);
 		var row = Math.floor(mousePos.y / seatSize);
 		var isSameSeat = selectedSeat != null && selectedSeat.row == row && selectedSeat.column == col;
+		var isReservedSeat = reservedSeat != null && reservedSeat.row == row && reservedSeat.column == col;
 		var skipLock = false;
-		if (isSameSeat) {
+		if (isSameSeat && !isReservedSeat) {
 			skipLock = true;
 		}
 		if (selectedSeat != null && !isSameSeat) {
@@ -138,6 +140,8 @@
 				type: 'unlockSeat',
 				lockId: lockId
 		};
+		selectedSeat = null;
+		reservedSeat = null;
 		ws.send(JSON.stringify(message));
 	}
 	
@@ -162,6 +166,10 @@
 				type: 'reserveSeat',
 				lockId: lockId
 		};
+		reservedSeat = {
+				row: selectedSeat.row,
+				column: selectedSeat.column
+		}
 		ws.send(JSON.stringify(message));
 	}
 	
@@ -176,6 +184,10 @@
 	}
 	
 	function onSeatStatus() {
+		if (selectedSeat != null && selectedSeat.row == msg.row - 1 && selectedSeat.column == msg.column - 1 && msg.status == "free") {
+			selectedSeat = null;
+			lockId = null;
+		}
 		drawSeat(msg.row - 1, msg.column - 1, msg.status);
 	}
 	
