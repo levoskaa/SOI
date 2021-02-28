@@ -46,6 +46,12 @@ public class CinemaEndpoint {
 	case "initRoom":
 	    initRoom(session, message);
 	    break;
+	case "getRoomSize":
+	    getRoomSize(session);
+	    break;
+	case "updateSeats":
+	    updateSeats(session);
+	    break;
 	}
     }
 
@@ -55,8 +61,8 @@ public class CinemaEndpoint {
 	JsonObject error = null;
 	boolean isError = false;
 	try {
-	    rows = Integer.parseInt(message.getString("rows"));
-	    columns = Integer.parseInt(message.getString("columns"));
+	    rows = Integer.parseInt(message.get("rows").toString());
+	    columns = Integer.parseInt(message.get("columns").toString());
 	    if (rows <= 0 || columns <= 0) {
 		throw new Exception();
 	    }
@@ -78,6 +84,34 @@ public class CinemaEndpoint {
 	for (int i = 0; i < rows; ++i) {
 	    for (int j = 0; j < columns; ++j) {
 		seats[i][j] = SeatStatus.FREE;
+	    }
+	}
+    }
+
+    private void getRoomSize(Session session) {
+	JsonObject roomSize = Json.createObjectBuilder().add("type", "roomSize")
+		.add("rows", seats.length).add("columns", seats[0].length)
+		.build();
+	try {
+	    session.getBasicRemote().sendText(roomSize.toString());
+	} catch (Exception e) {
+	}
+    }
+
+    private void updateSeats(Session session) {
+	int rows = seats.length;
+	int columns = seats[0].length;
+	JsonObject seatStatus;
+	for (int i = 0; i < rows; ++i) {
+	    for (int j = 0; j < columns; ++j) {
+		try {
+		    seatStatus = Json.createObjectBuilder()
+			    .add("type", "seatStatus").add("row", i + 1)
+			    .add("column", j + 1)
+			    .add("status", seats[i][j].toString()).build();
+		    session.getBasicRemote().sendText(seatStatus.toString());
+		} catch (Exception e) {
+		}
 	    }
 	}
     }

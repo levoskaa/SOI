@@ -23,6 +23,7 @@
 	var selectedSeat = null;
 	var canvas = null;
 	var context = null; // Ezt a "context" nevű változót tilos átnevezni vagy lokálissá tenni.
+	var msg = null;
 
 	function init() {
 		wsUrl = getRootUri() + "/WebSocket_W9HL9H/cinema";
@@ -46,7 +47,16 @@
 
 	// TODO: ide jöhetnek a WebSocket kezeléssel kapcsolatos függvények	
 	function onMessage(evt) {
-		console.log("Message received: " + evt.data);
+		console.log('Message from server received: ' + evt.data);
+		msg = JSON.parse(evt.data);
+		switch(msg.type) {
+			case 'roomSize':
+				onRoomSize();
+				break;
+			case 'seatStatus':
+				onSeatStatus();
+				break;
+		}
 	}
 
 	// Kirajzolja a canvas-t csupa szabad székekkel:
@@ -101,19 +111,32 @@
 	function initRoom() {
 		message = {
 				type: 'initRoom',
-				rows: rowCount,
-				columns: colCount
+				rows: parseFloat(document.getElementById("rows").value),
+				columns: parseFloat(document.getElementById("columns").value)
 		};
 		ws.send(JSON.stringify(message));
 		console.log(message);
 	}
 	
-	function setRows() {
-		rowCount = parseFloat(document.getElementById("rows").value);
+	function refresh() {
+		message = {
+				type: 'getRoomSize'
+		};
+		ws.send(JSON.stringify(message));
 	}
 	
-	function setColumns() {
-		colCount = parseFloat(document.getElementById("columns").value);
+	function onRoomSize() {
+		rowCount = msg.rows;
+		colCount = msg.columns;
+		message = {
+				type: 'updateSeats'
+		};
+		ws.send(JSON.stringify(message));
+		draw();
+	}
+	
+	function onSeatStatus() {
+		drawSeat(msg.row - 1, msg.column - 1, msg.status);
 	}
 
 	// Megadja az egér pozícióját a canvas-en belül:
@@ -138,13 +161,13 @@
 	<div style="text-align: center;">
 		<!-- Az alábbi gomb hatására le kell kérdezni a moziterem méretét és az összes szék
             státuszát, és ki kell rajzolni a székeket a canvas-re. -->
-		<input id="refreshButton" value="Refresh" type="button" /><br />
+		<input id="refreshButton" value="Refresh" type="button" onclick="refresh()"/><br />
 		<!-- Az alábbi input mezőben megadható a moziterem sorainak száma: -->
 		<label for="rows">row count:</label><input id="rows" name="rows"
-			value="10" type="text" size="5" oninput="setRows()" />
+			value="10" type="text" size="5"/>
 		<!-- Az alábbi input mezőben megadható a moziterem oszlopainak száma: -->
 		<label for="columns">column count:</label><input id="columns"
-			name="columns" value="20" type="text" size="5" oninput="setColumns()" />
+			name="columns" value="20" type="text" size="5"/>
 		<!-- Az alábbi gombnak az előző két mezőben megadott értékekkel kell inicializálnia
             a mozitermet: -->
 		<input id="initButton" value="Init" type="button" onclick="initRoom()"/><br />
