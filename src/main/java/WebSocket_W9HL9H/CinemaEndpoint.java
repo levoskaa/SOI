@@ -95,6 +95,7 @@ public class CinemaEndpoint {
 	    return;
 	}
 	seats = new SeatStatus[rows][columns];
+	locks.clear();
 	for (int i = 0; i < rows; ++i) {
 	    for (int j = 0; j < columns; ++j) {
 		seats[i][j] = SeatStatus.FREE;
@@ -104,8 +105,8 @@ public class CinemaEndpoint {
 
     private void getRoomSize(Session session) {
 	JsonObject roomSize = Json.createObjectBuilder().add("type", "roomSize")
-		.add("rows", seats.length).add("columns", seats[0].length)
-		.build();
+		.add("rows", seats.length)
+		.add("columns", seats.length > 0 ? seats[0].length : 0).build();
 	try {
 	    session.getBasicRemote().sendText(roomSize.toString());
 	} catch (Exception e) {
@@ -137,7 +138,7 @@ public class CinemaEndpoint {
 	    index = getIndex(message);
 	} catch (IllegalArgumentException e) {
 	    error = Json.createObjectBuilder().add("type", "error")
-		    .add("message", e.getMessage()).build();
+		    .add("message", "Lock failed: invalid index").build();
 	    try {
 		session.getBasicRemote().sendText(error.toString());
 	    } catch (Exception ex) {
@@ -147,7 +148,7 @@ public class CinemaEndpoint {
 	if (seats[index.getKey() - 1][index.getValue()
 		- 1] != SeatStatus.FREE) {
 	    error = Json.createObjectBuilder().add("type", "error")
-		    .add("message", "Seat is not free").build();
+		    .add("message", "Lock failed: seat is not free").build();
 	    try {
 		session.getBasicRemote().sendText(error.toString());
 	    } catch (Exception ex) {
@@ -213,11 +214,20 @@ public class CinemaEndpoint {
     }
 
     private void reserveSeat(Session session, JsonObject message) {
-	String lockId = message.getString("lockId").toString();
 	JsonObject error = null;
+	if (message.isNull("lockId")) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message", "Reserve failed: invalid lockId").build();
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception e) {
+	    }
+	    return;
+	}
+	String lockId = message.getString("lockId").toString();
 	if (!locks.containsKey(lockId)) {
 	    error = Json.createObjectBuilder().add("type", "error")
-		    .add("message", "Invalid lockId").build();
+		    .add("message", "Reserve failed: invalid lockId").build();
 	    try {
 		session.getBasicRemote().sendText(error.toString());
 	    } catch (Exception e) {

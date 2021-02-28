@@ -60,6 +60,9 @@
 			case 'lockResult':
 				onLockResult();
 				break;
+			case 'error':
+				onMyError();
+				break;
 		}
 	}
 
@@ -102,7 +105,12 @@
 	function selectSeat() {
 		var col = Math.floor(mousePos.x / seatSize);
 		var row = Math.floor(mousePos.y / seatSize);
-		if (selectedSeat != null) {
+		var isSameSeat = selectedSeat != null && selectedSeat.row == row && selectedSeat.column == col;
+		var skipLock = false;
+		if (isSameSeat) {
+			skipLock = true;
+		}
+		if (selectedSeat != null && !isSameSeat) {
 			// TODO: ez a régi zárolt szék, ennek a zárolását fel kell oldani
 			unlockSeat();
 		}
@@ -111,7 +119,9 @@
 			column : col
 		};
 		// TODO: ez az új szék, ezt kell zárolni
-		lockSeat();
+		if (!skipLock) {
+			lockSeat();
+		}
 	}
 	
 	function lockSeat() {
@@ -121,7 +131,6 @@
 				column: selectedSeat.column + 1
 		};
 		ws.send(JSON.stringify(message));
-		console.log(message);
 	}
 	
 	function unlockSeat() {
@@ -130,7 +139,6 @@
 				lockId: lockId
 		};
 		ws.send(JSON.stringify(message));
-		console.log(message);
 	}
 	
 	function initRoom() {
@@ -140,7 +148,6 @@
 				columns: parseFloat(document.getElementById("columns").value)
 		};
 		ws.send(JSON.stringify(message));
-		console.log(message);
 	}
 	
 	function refresh() {
@@ -156,7 +163,6 @@
 				lockId: lockId
 		};
 		ws.send(JSON.stringify(message));
-		console.log(message);
 	}
 	
 	function onRoomSize() {
@@ -175,6 +181,12 @@
 	
 	function onLockResult() {
 		lockId = msg.lockId;
+	}
+	
+	function onMyError() {
+		if (msg.message.includes("Lock failed") || msg.message.includes("Reserve failed")) {
+			selectedSeat = null;
+		}
 	}
 
 	// Megadja az egér pozícióját a canvas-en belül:
