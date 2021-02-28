@@ -184,6 +184,7 @@
 	}
 	
 	function onMyError() {
+		alert(msg.message);
 		if (msg.message.includes("Lock failed") || msg.message.includes("Reserve failed")) {
 			selectedSeat = null;
 		}
