@@ -4,13 +4,13 @@
   - soap-service
   - soap-client
 
-## 2. házi feladat: REST
+### 2. házi feladat: REST
   - rest-service
 
-## 3. házi feladat: WebSocket
+### 3. házi feladat: WebSocket
   - websocket
 
-## 4. házi feladat: Microservices
+### 4. házi feladat: Microservices
   - microservices-banking
   - microservices-movies
   - microservices-ticketing
