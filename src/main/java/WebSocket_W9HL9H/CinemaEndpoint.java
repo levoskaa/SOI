@@ -1,7 +1,9 @@
 package WebSocket_W9HL9H;
 
 import java.io.StringReader;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.json.Json;
@@ -17,6 +19,7 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint("/cinema")
 public class CinemaEndpoint {
     private static SeatStatus[][] seats = new SeatStatus[0][0];
+    private static Map<String, Map.Entry<Integer, Integer>> locks = new ConcurrentHashMap<>();
     private static Map<String, Session> sessions = new ConcurrentHashMap<>();
 
     @OnOpen
@@ -52,6 +55,9 @@ public class CinemaEndpoint {
 	case "updateSeats":
 	    updateSeats(session);
 	    break;
+	case "lockSeat":
+	    lockSeat(session, message);
+	    break;
 	}
     }
 
@@ -70,7 +76,7 @@ public class CinemaEndpoint {
 	} catch (Exception e) {
 	    error = Json.createObjectBuilder().add("type", "error")
 		    .add("message",
-			    "Row or column count is not positive integer")
+			    "Row or column count is not a positive integer")
 		    .build();
 	    isError = true;
 	}
@@ -79,11 +85,12 @@ public class CinemaEndpoint {
 		session.getBasicRemote().sendText(error.toString());
 	    } catch (Exception e) {
 	    }
-	}
-	seats = new SeatStatus[rows][columns];
-	for (int i = 0; i < rows; ++i) {
-	    for (int j = 0; j < columns; ++j) {
-		seats[i][j] = SeatStatus.FREE;
+	} else {
+	    seats = new SeatStatus[rows][columns];
+	    for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < columns; ++j) {
+		    seats[i][j] = SeatStatus.FREE;
+		}
 	    }
 	}
     }
@@ -114,5 +121,71 @@ public class CinemaEndpoint {
 		}
 	    }
 	}
+    }
+
+    private void lockSeat(Session session, JsonObject message) {
+	Map.Entry<Integer, Integer> index = null;
+	JsonObject error = null;
+	try {
+	    index = getIndex(message);
+	} catch (IllegalArgumentException e) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message", e.getMessage()).build();
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception ex) {
+	    }
+	    return;
+	}
+	if (seats[index.getKey() - 1][index.getValue()
+		- 1] != SeatStatus.FREE) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message", "Seat is not free").build();
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception ex) {
+	    }
+	    return;
+	}
+
+	seats[index.getKey() - 1][index.getValue() - 1] = SeatStatus.LOCKED;
+	JsonObject seatStatus = Json.createObjectBuilder()
+		.add("type", "seatStatus").add("row", index.getKey())
+		.add("column", index.getValue())
+		.add("status", seats[index.getKey() - 1][index.getValue() - 1]
+			.toString())
+		.build();
+	try {
+	    for (Session s : sessions.values()) {
+		s.getBasicRemote().sendText(seatStatus.toString());
+	    }
+	} catch (Exception e) {
+	}
+
+	String lockId = UUID.randomUUID().toString();
+	locks.put(lockId, new AbstractMap.SimpleEntry<Integer, Integer>(
+		index.getKey() - 1, index.getValue() - 1));
+	JsonObject lockResult = Json.createObjectBuilder()
+		.add("type", "lockResult").add("lockId", lockId).build();
+	try {
+	    session.getBasicRemote().sendText(lockResult.toString());
+	} catch (Exception e) {
+	}
+    }
+
+    private Map.Entry<Integer, Integer> getIndex(JsonObject message) {
+	int row = 0;
+	int column = 0;
+	try {
+	    row = Integer.parseInt(message.get("row").toString());
+	    column = Integer.parseInt(message.get("column").toString());
+	    if (row < 1 || row > seats.length || column < 1
+		    || column > seats[0].length) {
+		throw new Exception();
+	    }
+	} catch (Exception e) {
+	    throw new IllegalArgumentException("Invalid row or column index");
+	}
+	return new AbstractMap.SimpleEntry<Integer, Integer>(row, column);
     }
 }

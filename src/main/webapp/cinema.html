@@ -21,6 +21,7 @@
 	var seatPadding = 2;
 	var mousePos = null;
 	var selectedSeat = null;
+	var lockId = null;
 	var canvas = null;
 	var context = null; // Ezt a "context" nevű változót tilos átnevezni vagy lokálissá tenni.
 	var msg = null;
@@ -55,6 +56,9 @@
 				break;
 			case 'seatStatus':
 				onSeatStatus();
+				break;
+			case 'lockResult':
+				onLockResult();
 				break;
 		}
 	}
@@ -100,12 +104,24 @@
 		var row = Math.floor(mousePos.y / seatSize);
 		if (selectedSeat != null) {
 			// TODO: ez a régi zárolt szék, ennek a zárolását fel kell oldani
+			unlockSeat();
 		}
 		selectedSeat = {
 			row : row,
 			column : col
 		};
 		// TODO: ez az új szék, ezt kell zárolni
+		lockSeat();
+	}
+	
+	function lockSeat() {
+		message = {
+				type: 'lockSeat',
+				row: selectedSeat.row + 1,
+				column: selectedSeat.column + 1
+		};
+		ws.send(JSON.stringify(message));
+		console.log(message);
 	}
 	
 	function initRoom() {
@@ -131,12 +147,16 @@
 		message = {
 				type: 'updateSeats'
 		};
-		ws.send(JSON.stringify(message));
 		draw();
+		ws.send(JSON.stringify(message));
 	}
 	
 	function onSeatStatus() {
 		drawSeat(msg.row - 1, msg.column - 1, msg.status);
+	}
+	
+	function onLockResult() {
+		lockId = msg.lockId;
 	}
 
 	// Megadja az egér pozícióját a canvas-en belül:
