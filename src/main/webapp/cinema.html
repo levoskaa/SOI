@@ -124,6 +124,15 @@
 		console.log(message);
 	}
 	
+	function unlockSeat() {
+		message = {
+				type: 'unlockSeat',
+				lockId: lockId
+		};
+		ws.send(JSON.stringify(message));
+		console.log(message);
+	}
+	
 	function initRoom() {
 		message = {
 				type: 'initRoom',

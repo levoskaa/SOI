@@ -58,6 +58,10 @@ public class CinemaEndpoint {
 	case "lockSeat":
 	    lockSeat(session, message);
 	    break;
+
+	case "unlockSeat":
+	    unlockSeat(session, message);
+	    break;
 	}
     }
 
@@ -85,12 +89,12 @@ public class CinemaEndpoint {
 		session.getBasicRemote().sendText(error.toString());
 	    } catch (Exception e) {
 	    }
-	} else {
-	    seats = new SeatStatus[rows][columns];
-	    for (int i = 0; i < rows; ++i) {
-		for (int j = 0; j < columns; ++j) {
-		    seats[i][j] = SeatStatus.FREE;
-		}
+	    return;
+	}
+	seats = new SeatStatus[rows][columns];
+	for (int i = 0; i < rows; ++i) {
+	    for (int j = 0; j < columns; ++j) {
+		seats[i][j] = SeatStatus.FREE;
 	    }
 	}
     }
@@ -163,12 +167,44 @@ public class CinemaEndpoint {
 	}
 
 	String lockId = UUID.randomUUID().toString();
+	System.out.println(lockId);
 	locks.put(lockId, new AbstractMap.SimpleEntry<Integer, Integer>(
 		index.getKey() - 1, index.getValue() - 1));
 	JsonObject lockResult = Json.createObjectBuilder()
 		.add("type", "lockResult").add("lockId", lockId).build();
 	try {
 	    session.getBasicRemote().sendText(lockResult.toString());
+	} catch (Exception e) {
+	}
+    }
+
+    private void unlockSeat(Session session, JsonObject message) {
+	String lockId = message.getString("lockId").toString();
+	JsonObject error = null;
+	if (!locks.containsKey(lockId)) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message", "Invalid lockId").build();
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception e) {
+	    }
+	    return;
+	}
+
+	Map.Entry<Integer, Integer> index = locks.get(lockId);
+	seats[index.getKey()][index.getValue()] = SeatStatus.FREE;
+	locks.remove(lockId);
+
+	JsonObject seatStatus = Json.createObjectBuilder()
+		.add("type", "seatStatus").add("row", index.getKey() + 1)
+		.add("column", index.getValue() + 1)
+		.add("status",
+			seats[index.getKey()][index.getValue()].toString())
+		.build();
+	try {
+	    for (Session s : sessions.values()) {
+		s.getBasicRemote().sendText(seatStatus.toString());
+	    }
 	} catch (Exception e) {
 	}
     }
