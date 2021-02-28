@@ -150,6 +150,15 @@
 		ws.send(JSON.stringify(message));
 	}
 	
+	function reserveSeat() {
+		message = {
+				type: 'reserveSeat',
+				lockId: lockId
+		};
+		ws.send(JSON.stringify(message));
+		console.log(message);
+	}
+	
 	function onRoomSize() {
 		rowCount = msg.rows;
 		colCount = msg.columns;
@@ -201,7 +210,7 @@
             a mozitermet: -->
 		<input id="initButton" value="Init" type="button" onclick="initRoom()"/><br />
 		<!-- Az alábbi gombnak le kell foglalnia az éppen aktuálisan zárolt széket: -->
-		<input id="reserveButton" value="Reserve" type="button" /><br />
+		<input id="reserveButton" value="Reserve" type="button" onclick="reserveSeat()" /><br />
 		<!-- Ez a canvas, ide lesznek kirajzolva a székek: -->
 		<canvas id="room"></canvas>
 	</div>

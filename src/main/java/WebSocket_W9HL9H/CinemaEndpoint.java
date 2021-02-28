@@ -62,6 +62,9 @@ public class CinemaEndpoint {
 	case "unlockSeat":
 	    unlockSeat(session, message);
 	    break;
+	case "reserveSeat":
+	    reserveSeat(session, message);
+	    break;
 	}
     }
 
@@ -194,6 +197,36 @@ public class CinemaEndpoint {
 	Map.Entry<Integer, Integer> index = locks.get(lockId);
 	seats[index.getKey()][index.getValue()] = SeatStatus.FREE;
 	locks.remove(lockId);
+
+	JsonObject seatStatus = Json.createObjectBuilder()
+		.add("type", "seatStatus").add("row", index.getKey() + 1)
+		.add("column", index.getValue() + 1)
+		.add("status",
+			seats[index.getKey()][index.getValue()].toString())
+		.build();
+	try {
+	    for (Session s : sessions.values()) {
+		s.getBasicRemote().sendText(seatStatus.toString());
+	    }
+	} catch (Exception e) {
+	}
+    }
+
+    private void reserveSeat(Session session, JsonObject message) {
+	String lockId = message.getString("lockId").toString();
+	JsonObject error = null;
+	if (!locks.containsKey(lockId)) {
+	    error = Json.createObjectBuilder().add("type", "error")
+		    .add("message", "Invalid lockId").build();
+	    try {
+		session.getBasicRemote().sendText(error.toString());
+	    } catch (Exception e) {
+	    }
+	    return;
+	}
+
+	Map.Entry<Integer, Integer> index = locks.get(lockId);
+	seats[index.getKey()][index.getValue()] = SeatStatus.RESERVED;
 
 	JsonObject seatStatus = Json.createObjectBuilder()
 		.add("type", "seatStatus").add("row", index.getKey() + 1)
