@@ -9,37 +9,35 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import movies.Movies.Movie;
+import movies.Movies.MovieId;
+import movies.Movies.MovieIdList;
+import movies.Movies.MovieList;
 
-@Path("hello")
-@Consumes("application/x-protobuf")
-@Produces("application/x-protobuf")
+@Consumes({ "application/json", "application/x-protobuf" })
+@Produces({ "application/json", "application/x-protobuf" })
 public interface IMoviesService {
     @GET
-    Response getMovies();
+    MovieList getMovies();
 
     @GET
     @Path("{id}")
-    Response getMovieById(@PathParam("id") int id);
+    Movie getMovieById(@PathParam("id") int id);
 
     @GET
     @Path("find")
-    Response findMovie(@QueryParam("year") int year,
+    MovieIdList findMovie(@QueryParam("year") int year,
 	    @QueryParam("orderby") String orderingField);
 
     @POST
-    @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    Response createMovie(Movie movie);
+    MovieId createMovie(Movie movie);
 
     @PUT
     @Path("{id}")
-    @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    Response upsertMovie(@PathParam("id") int id, Movie movie);
+    void upsertMovie(@PathParam("id") int id, Movie movie);
 
     @DELETE
     @Path("{id}")
-    Response deleteMovie(@PathParam("id") int id);
+    void deleteMovie(@PathParam("id") int id);
 }
