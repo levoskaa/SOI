@@ -4,21 +4,26 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
-@Path("ticketing")
-@Consumes("application/x-protobuf")
-@Produces("application/x-protobuf")
+import ticketing.Ticketing.BuyTicketsRequest;
+import ticketing.Ticketing.BuyTicketsResponse;
+import ticketing.Ticketing.GetMoviesRequest;
+import ticketing.Ticketing.GetMoviesResponse;
+import ticketing.Ticketing.GetTicketsRequest;
+import ticketing.Ticketing.GetTicketsResponse;
+
+@Consumes({ "application/json", "application/x-protobuf" })
+@Produces({ "application/json", "application/x-protobuf" })
 public interface ITicketingService {
     @POST
     @Path("GetMovies")
-    Response getMovies(int year);
+    GetMoviesResponse getMovies(GetMoviesRequest request);
 
     @POST
     @Path("BuyTickets")
-    Response buyTickets(int movieId, int count, String cardNumber);
+    BuyTicketsResponse buyTickets(BuyTicketsRequest request);
 
     @POST
     @Path("GetTickets")
-    Response getTickets();
+    GetTicketsResponse getTickets(GetTicketsRequest request);
 }
