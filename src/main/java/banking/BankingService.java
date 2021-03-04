@@ -6,7 +6,13 @@ import banking.Banking.ChargeCardResponse;
 public class BankingService implements IBankingService {
     @Override
     public ChargeCardResponse chargeCard(ChargeCardRequest request) {
-	// TODO Auto-generated method stub
-	return null;
+	boolean result = false;
+	if (request.getAmount() > 0
+		&& request.getCardNumber().length() % 2 == 0) {
+	    result = true;
+	}
+	ChargeCardResponse response = ChargeCardResponse.newBuilder()
+		.setSuccess(result).build();
+	return response;
     }
 }
