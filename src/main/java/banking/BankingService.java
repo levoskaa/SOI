@@ -11,8 +11,6 @@ public class BankingService implements IBankingService {
 		&& request.getCardNumber().length() % 2 == 0) {
 	    result = true;
 	}
-	ChargeCardResponse response = ChargeCardResponse.newBuilder()
-		.setSuccess(result).build();
-	return response;
+	return ChargeCardResponse.newBuilder().setSuccess(result).build();
     }
 }
