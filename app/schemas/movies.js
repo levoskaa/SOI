@@ -4,6 +4,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Movie = void 0;
 const mongoose = require("mongoose");
 let MovieSchema = new mongoose.Schema({
+    _id: {
+        type: Number,
+        select: false
+    },
+    __v: {
+        type: Number,
+        select: false
+    },
     title: String,
     year: Number,
     director: String,
