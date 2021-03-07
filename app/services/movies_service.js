@@ -13,5 +13,16 @@ router.get('/', (req, res) => {
         }
     });
 });
+router.get('/:id', (req, res) => {
+    const id = req.params.id;
+    movies_1.Movie.findById(id, (err, movie) => {
+        if (err) {
+            res.sendStatus(404);
+        }
+        else {
+            res.json(movie);
+        }
+    });
+});
 exports.default = router;
 //# sourceMappingURL=movies_service.js.map
