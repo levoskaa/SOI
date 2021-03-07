@@ -2,6 +2,7 @@
 
 // Import express:
 import * as express from 'express';
+import { IMovie, IMovieId, IMovieList } from '../interfaces/movies';
 import { Movie, MovieEntity } from '../schemas/movies';
 
 // Create a new express router:
@@ -11,7 +12,7 @@ let nextId = 0;
 
 // Create movie
 router.post('/', (req, res) => {
-    const movieToCreate = {
+    const movieToCreate: IMovie = {
         _id: nextId++,
         ...req.body
     }
@@ -19,7 +20,10 @@ router.post('/', (req, res) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
         } else {
-            res.json({ id: movie.id });
+            const result: IMovieId = {
+                id: movie.id
+            }
+            res.json(result);
         }
     })
 });
@@ -30,7 +34,10 @@ router.get('/', (req, res) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
         } else {
-            res.json({ movie: movies });
+            const result: IMovieList = {
+                movie: movies
+            }
+            res.json(result);
         }
     })
 });
@@ -42,7 +49,8 @@ router.get('/:id', (req, res) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
         } else if (movie) {
-            res.json(movie);
+            const result: IMovie = movie;
+            res.json(result);
         } else {
             res.sendStatus(404);
         }

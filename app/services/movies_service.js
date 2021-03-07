@@ -11,7 +11,10 @@ router.post('/', (req, res) => {
             res.json({ info: 'Error executing query.', error: err });
         }
         else {
-            res.json({ id: movie.id });
+            const result = {
+                id: movie.id
+            };
+            res.json(result);
         }
     });
 });
@@ -21,7 +24,10 @@ router.get('/', (req, res) => {
             res.json({ info: 'Error executing query.', error: err });
         }
         else {
-            res.json({ movie: movies });
+            const result = {
+                movie: movies
+            };
+            res.json(result);
         }
     });
 });
@@ -32,7 +38,8 @@ router.get('/:id', (req, res) => {
             res.json({ info: 'Error executing query.', error: err });
         }
         else if (movie) {
-            res.json(movie);
+            const result = movie;
+            res.json(result);
         }
         else {
             res.sendStatus(404);
