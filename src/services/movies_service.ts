@@ -40,9 +40,11 @@ router.get('/:id', (req, res) => {
     const id = req.params.id;
     Movie.findById(id, (err, movie) => {
         if (err) {
-            res.sendStatus(404);
-        } else {
+            res.json({ info: 'Error executing query.', error: err });
+        } else if (movie) {
             res.json(movie);
+        } else {
+            res.sendStatus(404);
         }
     });
 });
