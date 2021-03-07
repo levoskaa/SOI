@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
     });
 });
 router.get('/:id', (req, res) => {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
     movies_1.Movie.findById(id, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
@@ -43,6 +43,18 @@ router.get('/:id', (req, res) => {
         }
         else {
             res.sendStatus(404);
+        }
+    });
+});
+router.put('/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const movie = Object.assign({ _id: id }, req.body);
+    movies_1.Movie.findOneAndUpdate({ _id: id }, movie, { upsert: true, new: true }, (err, movie) => {
+        if (err) {
+            res.json({ info: 'Error executing query.', error: err });
+        }
+        else {
+            res.sendStatus(200);
         }
     });
 });

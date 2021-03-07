@@ -44,7 +44,7 @@ router.get('/', (req, res) => {
 
 // Get movie by id
 router.get('/:id', (req, res) => {
-    const id = req.params.id;
+    const id: number = parseInt(req.params.id);
     Movie.findById(id, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
@@ -56,6 +56,22 @@ router.get('/:id', (req, res) => {
         }
     });
 });
+
+// Upsert movie
+router.put('/:id', (req, res) => {
+    const id: number = parseInt(req.params.id);
+    const movie: IMovie = {
+        _id: id,
+        ...req.body
+    };
+    Movie.findOneAndUpdate({ _id: id }, movie, { upsert: true, new: true }, (err, movie) => {
+        if (err) {
+            res.json({ info: 'Error executing query.', error: err });
+        } else {
+            res.sendStatus(200);
+        }
+    });
+})
 
 // Export the router:
 export default router;
