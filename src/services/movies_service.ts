@@ -2,8 +2,8 @@
 
 // Import express:
 import * as express from 'express';
-import { IMovie, IMovieId, IMovieList } from '../interfaces/movies';
-import { Movie, MovieEntity } from '../schemas/movies';
+import { IMovie, IMovieId, IMovieIdList, IMovieList } from '../interfaces/movies';
+import { Movie } from '../schemas/movies';
 
 // Create a new express router:
 const router = express.Router();
@@ -45,6 +45,9 @@ router.get('/', (req, res) => {
 // Get movie by id
 router.get('/:id', (req, res) => {
     const id: number = parseInt(req.params.id);
+    if (id < 0) {
+        res.sendStatus(400);
+    }
     Movie.findById(id, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
@@ -64,7 +67,7 @@ router.put('/:id', (req, res) => {
         _id: id,
         ...req.body
     };
-    Movie.findOneAndUpdate({ _id: id }, movie, { upsert: true, new: true }, (err, movie) => {
+    Movie.findByIdAndUpdate(id, movie, { upsert: true, new: true }, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
         } else {
@@ -72,6 +75,17 @@ router.put('/:id', (req, res) => {
         }
     });
 })
+
+// Delete movie
+router.delete('/:id', (req, res) => {
+    const id: number = parseInt(req.params.id);
+    Movie.findByIdAndDelete(id, {}, (err, movie) => {
+        if (err) {
+            res.json({ info: 'Error executing query.', error: err });
+        }
+        res.sendStatus(200);
+    }).exec();
+});
 
 // Export the router:
 export default router;

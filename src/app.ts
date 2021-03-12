@@ -10,7 +10,7 @@ import index from './routes/index';
 
 const app: express.Express = express();
 
-let mongoUri = 'mongodb://localhost/movies';
+let mongoUri = 'mongodb://localhost/w9hl9h';
 mongoose.connect(mongoUri, (err) => {
   if (err) {
     console.error(err.message);

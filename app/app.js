@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const index_1 = require("./routes/index");
 const app = express();
-let mongoUri = 'mongodb://localhost/movies';
+let mongoUri = 'mongodb://localhost/w9hl9h';
 mongoose.connect(mongoUri, (err) => {
     if (err) {
         console.error(err.message);

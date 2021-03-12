@@ -33,6 +33,9 @@ router.get('/', (req, res) => {
 });
 router.get('/:id', (req, res) => {
     const id = parseInt(req.params.id);
+    if (id < 0) {
+        res.sendStatus(400);
+    }
     movies_1.Movie.findById(id, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
@@ -49,7 +52,7 @@ router.get('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const movie = Object.assign({ _id: id }, req.body);
-    movies_1.Movie.findOneAndUpdate({ _id: id }, movie, { upsert: true, new: true }, (err, movie) => {
+    movies_1.Movie.findByIdAndUpdate(id, movie, { upsert: true, new: true }, (err, movie) => {
         if (err) {
             res.json({ info: 'Error executing query.', error: err });
         }
@@ -57,6 +60,15 @@ router.put('/:id', (req, res) => {
             res.sendStatus(200);
         }
     });
+});
+router.delete('/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    movies_1.Movie.findByIdAndDelete(id, {}, (err, movie) => {
+        if (err) {
+            res.json({ info: 'Error executing query.', error: err });
+        }
+        res.sendStatus(200);
+    }).exec();
 });
 exports.default = router;
 //# sourceMappingURL=movies_service.js.map
