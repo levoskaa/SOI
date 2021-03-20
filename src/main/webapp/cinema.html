@@ -159,6 +159,9 @@
 	}
 	
 	function reserveSeat() {
+		if (lockId == null) {
+			return;
+		}
 		message = {
 				type: 'reserveSeat',
 				lockId: lockId
