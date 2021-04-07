@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.Path;
+
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -25,6 +27,7 @@ import ticketing.Ticketing.GetTicketsRequest;
 import ticketing.Ticketing.GetTicketsResponse;
 import ticketing.Ticketing.Ticket;
 
+@Path("")
 public class TicketingService implements ITicketingService {
     private static String BankingAddress;
     private static String MoviesAddress;
