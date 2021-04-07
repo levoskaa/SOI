@@ -2,6 +2,7 @@ package providers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -16,6 +17,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 @Provider
 @Consumes("application/json")
@@ -34,8 +36,15 @@ public class JsonProvider
 	    MultivaluedMap<String, String> httpHeaders,
 	    InputStream entityStream)
 	    throws IOException, WebApplicationException {
-	// TODO Auto-generated method stub
-	return null;
+	try {
+	    Message.Builder builder = (Message.Builder) type
+		    .getMethod("newBuilder").invoke(type);
+	    JsonFormat.parser().merge(new InputStreamReader(entityStream),
+		    builder);
+	    return builder.build();
+	} catch (Exception e) {
+	    return null;
+	}
     }
 
     @Override
@@ -56,7 +65,6 @@ public class JsonProvider
 	    MultivaluedMap<String, Object> httpHeaders,
 	    OutputStream entityStream)
 	    throws IOException, WebApplicationException {
-	// TODO Auto-generated method stub
-
+	entityStream.write(JsonFormat.printer().print(t).getBytes());
     }
 }

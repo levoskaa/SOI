@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -14,6 +15,7 @@ import movies.Movies.MovieId;
 import movies.Movies.MovieIdList;
 import movies.Movies.MovieList;
 
+@Path("")
 public class MoviesService implements IMoviesService {
     private static int nextId = 0;
     private static List<MyMovie> movies = new ArrayList<>();
