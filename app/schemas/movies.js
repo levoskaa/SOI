@@ -5,12 +5,10 @@ exports.Movie = void 0;
 const mongoose = require("mongoose");
 let MovieSchema = new mongoose.Schema({
     _id: {
-        type: Number,
-        select: false
+        type: Number
     },
     __v: {
-        type: Number,
-        select: false
+        type: Number
     },
     title: String,
     year: Number,

@@ -7,12 +7,10 @@ export interface MovieEntity extends IMovie, mongoose.Document { }
 
 let MovieSchema = new mongoose.Schema({
     _id: {
-        type: Number,
-        select: false
+        type: Number
     },
     __v: {
-        type: Number,
-        select: false
+        type: Number
     },
     title: String,
     year: Number,
